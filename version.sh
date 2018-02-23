@@ -24,7 +24,7 @@ commit() {
 	#check if file already is under control (add function previously used)
 	if [ ! -f "$PATH_FILE/.version/$BASE_NAME.1" ];then
 		echo "Error, no adds for the selected file" >&2
-		echo "Usage: ./vesion.sh add file.extension [OPT]" >&2
+		echo "Usage: ./vesion.sh add file.extension [OPT]" >&2 #Sortie erreur ou standard ?
 		echo "Where OPT must be -m \"Message to insert\" " >&2
  	fi
 
@@ -44,7 +44,7 @@ commit() {
 		echo "Error, can't find the log file" >&2
 		echo "The file may not be under versioning yet" >&2
 		echo "Usage : ./version.sh add file.extension" >&2
-		exit 5
+		exit 1
 	fi
 
 	if [ ! -n "$2" ] || [ ! -n "$3" ];then
@@ -55,11 +55,11 @@ commit() {
 		echo "$(date) $3" >> $PATH_FILE/.version/$BASE_NAME.log
 	fi
 
-	if [ "$2" != "-m" ];then
+	if [ -n "$2" ] && [ "$2" != "-m" ];then
 		echo "Error, wrong argument" >&2
 		echo "Usage: ./vesion.sh add file.extension [OPT]" >&2
 		echo "Where OPT must be -m \"Message to insert\" " >&2
-		exit 6
+		exit 3
 	fi
 
 	#Commit if needed
@@ -70,7 +70,7 @@ commit() {
  	echo "Committed a new version : $(($LAST_VERSION +1))"
 }
 
-add () {
+add() {
 	if ! [ -d "$PATH_FILE/.version" ]
 	then
 		mkdir "$PATH_FILE/.version"
@@ -79,13 +79,13 @@ add () {
 	if ! [ -f "$1" ]
 	then
 		echo "Error! ’$1’ is not a file." >&2
-		exit 2
+		exit 1
 	fi
 
 	if [ -f "$PATH_FILE/.version/$BASE_NAME.1" ]
 	then
 		echo "Error! ’$1’ already added." >&2
-		exit 3
+		exit 0
 	fi
 
 	cp "$1" "$PATH_FILE/.version/$BASE_NAME.1"
@@ -96,17 +96,17 @@ add () {
 	echo "$(date) Add to versioning" > $PATH_FILE/.version/$BASE_NAME.log
 }
 
-rm_f () {
+rm_f() {
 	if ! [ -f "$1" ]
 	then
 		echo "Error! ’$1’ is not a file." >&2
-		exit 4
+		exit 1
 	fi
 
 	if ! [ -f "$PATH_FILE/.version/$BASE_NAME.1" ]
 	then
 		echo "Error! ’$1’ is not a file under control the version manager." >&2
-		exit 5
+		exit 2
 	fi
 
 	echo "Are you sure you want to delete ’$1’ from versioning? (yes/no)"
@@ -125,34 +125,34 @@ rm_f () {
 	fi
 }
 
-revert () {
+revert() {
 	if ! [ -f "$1" ]
 	then
 		echo "Error! ’$1’ is not a file." >&2
-		exit 6
+		exit 1
 	fi
 
 	if ! [ -f "$PATH_FILE/.version/$BASE_NAME.1" ]
 	then
 		echo "Error! ’$1’ is not a file under control the version manager." >&2
-		exit 7
+		exit 2
 	fi
 
 	cp $PATH_FILE/.version/$BASE_NAME.latest $1
 	echo "Reverted to the latest version"
 }
 
-diff_f () {
+diff_f() {
 	if ! [ -f "$1" ]
 	then
 		echo "Error! ’$1’ is not a file." >&2
-		exit 8
+		exit 1
 	fi
 
 	if ! [ -f "$PATH_FILE/.version/$BASE_NAME.1" ]
 	then
 		echo "Error! ’$1’ is not a file under control the version manager." >&2
-		exit 9
+		exit 2
 	fi
 
 	if [ $(cat $PATH_FILE/.version/$BASE_NAME.latest | wc -l) -eq 0 -a $(cat $1 | wc -l) -eq 0 ]
@@ -171,7 +171,7 @@ checkout() {
 	if [ $2 -lt 1 ];then
 		echo "Error, invalid argument for version number, should be positive" >&2
 		echo "Usage: ./vesion.sh checkout file.extension N" >&2
-		exit 2
+		exit 3
 	fi
 
 	#check if number of version is under last version number
@@ -208,7 +208,7 @@ log() {
 		echo "Error, can't find the log file" >&2
 		echo "The file may not be under versioning yet" >&2
 		echo "Usage : ./version.sh add file.extension" >&2
-		exit 5
+		exit 1
 	fi
 
 	cat $PATH_FILE/.version/$BASE_NAME.log
@@ -226,7 +226,7 @@ log() {
 if [ ! -f $2 ];then
 	echo "Error, the file do not exist or isn't a regular file" >&2 
 	echo "Usage: ./vesion.sh commit file.extension" >&2
-	exit 2
+	exit 1
 fi
 
 #check validity of arguments number
@@ -234,7 +234,7 @@ if [ $# -lt 2 ];then
 		echo "Error, invalid number of arguments" >&2
 		echo "Usage: ./vesion.sh action file.extension [OPT]" >&2
 		echo "Where action can be add, rm, commit, revert, diff, log or checkout" >&2
-		exit 1
+		exit 3
 fi
 
 PATH_FILE=$(dirname $2)
