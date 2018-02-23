@@ -24,7 +24,8 @@ commit() {
 	#check if file already is under control (add function previously used)
 	if [ ! -f "$PATH_FILE/.version/$BASE_NAME.1" ];then
 		echo "Error, no adds for the selected file" >&2
-		echo "Usage: ./vesion.sh add file.extension" >&2
+		echo "Usage: ./vesion.sh add file.extension [OPT]" >&2
+		echo "Where OPT must be -m \"Message to insert\" " >&2
  	fi
 
  	#check if last version is diffrent than original file
@@ -37,14 +38,37 @@ commit() {
  	last_version $1
  	LAST_VERSION=$(echo $?)
 
- 	#Commit if needed
+ 	
+
+ 	if [ ! -f "$PATH_FILE/.version/$BASE_NAME.log" ];then
+		echo "Error, can't find the log file" >&2
+		echo "The file may not be under versioning yet" >&2
+		echo "Usage : ./version.sh add file.extension" >&2
+		exit 5
+	fi
+
+	if [ ! -n "$2" ] || [ ! -n "$3" ];then
+		echo "$(date) Add new version" >> $PATH_FILE/.version/$BASE_NAME.log
+	fi
+
+	if [ "$2" = "-m" ];then
+		echo "$(date) $3" >> $PATH_FILE/.version/$BASE_NAME.log
+	fi
+
+	if [ "$2" != "-m" ];then
+		echo "Error, wrong argument" >&2
+		echo "Usage: ./vesion.sh add file.extension [OPT]" >&2
+		echo "Where OPT must be -m \"Message to insert\" " >&2
+		exit 6
+	fi
+
+	#Commit if needed
  	diff -u $1 $PATH_FILE/.version/$BASE_NAME.latest > $PATH_FILE/.version/$BASE_NAME.$(($LAST_VERSION +1))
  	cat $1 > $PATH_FILE/.version/$BASE_NAME.latest
-
+ 	
  	#afficher le numero de version
  	echo "Committed a new version : $(($LAST_VERSION +1))"
 }
-
 
 add () {
 	if ! [ -d "$PATH_FILE/.version" ]
@@ -66,6 +90,10 @@ add () {
 
 	cp "$1" "$PATH_FILE/.version/$BASE_NAME.1"
 	cp "$1" "$PATH_FILE/.version/$BASE_NAME.latest"
+	echo "Added a new file under versioning : $BASE_NAME"
+
+	touch "$PATH_FILE/.version/$BASE_NAME.log"
+	echo "$(date) Add to versioning" > $PATH_FILE/.version/$BASE_NAME.log
 }
 
 rm_f () {
@@ -175,6 +203,18 @@ checkout() {
 	echo "Checked out version : $2"
 }
 
+log() {
+	if [ ! -f "$PATH_FILE/.version/$BASE_NAME.log" ];then
+		echo "Error, can't find the log file" >&2
+		echo "The file may not be under versioning yet" >&2
+		echo "Usage : ./version.sh add file.extension" >&2
+		exit 5
+	fi
+
+	cat $PATH_FILE/.version/$BASE_NAME.log
+	exit 0
+}
+
 
 
 #########################################################
@@ -205,13 +245,13 @@ case $1 in
 
 	"rm") rm_f $2;;
 
-	"commit" |"ci") commit $2;;
+	"commit" |"ci") commit $2 $3 $4;;
 
 	"revert") revert $2;;
 
 	"diff") diff_f $2;;
 
-	#"log") echo "Ok, on continue";;
+	"log") log;;
 
 	"checkout") if [ $# -lt 3 ] || ! [ "$(echo $3 | grep "^[[:digit:]] *$")" ];then
 					echo "Error, invalid number of arguments or argument type" >&2
