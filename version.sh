@@ -1,11 +1,25 @@
 #! /bin/dash
 
 
+#############################################################################################
+# The following script has been realized in an Universitary context
+# It allow user to get files under versioning, create new comit, load previous commit
+# ang get informations about the commits trough log messages
+# The scipt has been done for Dash interpretor
+# For further information on the script, see the README file
+
+# @Authors : FEDERSPIEL Remi & DELAVOUX Thibault
+# @UE : Systeme et programmation Systeme
+# L2 informatique - Université de franche-comté
+#############################################################################################
+
+
 #########################################################
 #					Utility function
 #########################################################
 
-# get the number of the last version saved for a file
+# The following Function return the number of the last commit
+# It do not takes any arguments but get the basename and path of the original file
 last_version(){
 	LAST_VERSION=0
 	for I in $(ls $PATH_FILE/.version/$BASE_NAME.[[:digit:]]);do
@@ -18,8 +32,44 @@ last_version(){
 #					Program Functions
 #########################################################
 
-commit() { 
+# The funtion add a new file under versioning. It will create hidden directory (if not already created)
+# and create 2 copy of the file in this directory.
+# The function expect one argument :
+# 	- The file path and name
+add() {
+	if ! [ -d "$PATH_FILE/.version" ]
+	then
+		mkdir "$PATH_FILE/.version"
+	fi
 
+	if ! [ -f "$1" ]
+	then
+		echo "Error! ’$1’ is not a file." >&2
+		exit 1
+	fi
+
+	if [ -f "$PATH_FILE/.version/$BASE_NAME.1" ]
+	then
+		echo "Error! ’$1’ already added." >&2
+		exit 0
+	fi
+
+	cp "$1" "$PATH_FILE/.version/$BASE_NAME.1"
+	cp "$1" "$PATH_FILE/.version/$BASE_NAME.latest"
+	echo "Added a new file under versioning : $BASE_NAME"
+
+	touch "$PATH_FILE/.version/$BASE_NAME.log"
+	echo "$(date) Add to versioning" > $PATH_FILE/.version/$BASE_NAME.log
+}
+
+
+# The function add a new commit for a file already under versioning
+# A patch will be created between the last version (.latest) and the original file state
+# The function take 3 arguments : 
+# 	- file name gave to te script that is the only
+# 	- [OPT] option name (only -m available to add a message to the log file to explain the commit)
+# 	- [OPT] message (String)
+commit() { 
 
 	#check if file already is under control (add function previously used)
 	if [ ! -f "$PATH_FILE/.version/$BASE_NAME.1" ];then
@@ -37,8 +87,6 @@ commit() {
  	#get the last version number
  	last_version $1
  	LAST_VERSION=$(echo $?)
-
- 	
 
  	if [ ! -f "$PATH_FILE/.version/$BASE_NAME.log" ];then
 		echo "Error, can't find the log file" >&2
@@ -66,36 +114,13 @@ commit() {
  	diff -u $1 $PATH_FILE/.version/$BASE_NAME.latest > $PATH_FILE/.version/$BASE_NAME.$(($LAST_VERSION +1))
  	cat $1 > $PATH_FILE/.version/$BASE_NAME.latest
  	
- 	#afficher le numero de version
  	echo "Committed a new version : $(($LAST_VERSION +1))"
 }
 
-add() {
-	if ! [ -d "$PATH_FILE/.version" ]
-	then
-		mkdir "$PATH_FILE/.version"
-	fi
 
-	if ! [ -f "$1" ]
-	then
-		echo "Error! ’$1’ is not a file." >&2
-		exit 1
-	fi
-
-	if [ -f "$PATH_FILE/.version/$BASE_NAME.1" ]
-	then
-		echo "Error! ’$1’ already added." >&2
-		exit 0
-	fi
-
-	cp "$1" "$PATH_FILE/.version/$BASE_NAME.1"
-	cp "$1" "$PATH_FILE/.version/$BASE_NAME.latest"
-	echo "Added a new file under versioning : $BASE_NAME"
-
-	touch "$PATH_FILE/.version/$BASE_NAME.log"
-	echo "$(date) Add to versioning" > $PATH_FILE/.version/$BASE_NAME.log
-}
-
+# The function remove a file from versioning and delete all the files, patch and log associated
+# The function expect one argument :
+# 	- The file path and name
 rm_f() {
 	if ! [ -f "$1" ]
 	then
@@ -125,6 +150,10 @@ rm_f() {
 	fi
 }
 
+
+# The function reload the last version commited for a file under versioning
+# The function expect one argument :
+# 	- The file path and name
 revert() {
 	if ! [ -f "$1" ]
 	then
@@ -142,6 +171,9 @@ revert() {
 	echo "Reverted to the latest version"
 }
 
+# The function print on the standard output the difference between the last version commited and a vile (already under versioning)
+# The function expect one argument :
+# 	- The file path and name
 diff_f() {
 	if ! [ -f "$1" ]
 	then
@@ -163,6 +195,10 @@ diff_f() {
 	fi
 }
 
+# The function load a previous version of a file under versioning
+# The function expect two argument :
+# 	- The file path and name
+# 	- The version's number to load
 checkout() { 
 
 	FILE_NAME=$(echo $BASE_NAME | cut -d. -f1)
@@ -203,6 +239,8 @@ checkout() {
 	echo "Checked out version : $2"
 }
 
+# The function print on the standard output the log-file for a file under versioning
+# The function do not expect aruments
 log() {
 	if [ ! -f "$PATH_FILE/.version/$BASE_NAME.log" ];then
 		echo "Error, can't find the log file" >&2
@@ -211,7 +249,7 @@ log() {
 		exit 1
 	fi
 
-	cat $PATH_FILE/.version/$BASE_NAME.log
+	cat -n $PATH_FILE/.version/$BASE_NAME.log
 	exit 0
 }
 
