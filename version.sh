@@ -4,13 +4,13 @@
 #############################################################################################
 # The following script has been realized in an Universitary context
 # It allow user to get files under versioning, create new comit, load previous commit
-# ang get informations about the commits trough log messages
+# and get informations about the commits trough log messages
 # The scipt has been done for Dash interpretor
 # For further information on the script, see the README file
 
 # @Authors : FEDERSPIEL Remi & DELAVOUX Thibault
 # @UE : Systeme et programmation Systeme
-# L2 informatique - Université de franche-comté
+# L2 informatique - Université de Franche-Comté
 #############################################################################################
 
 
@@ -18,7 +18,7 @@
 #					Utility function
 #########################################################
 
-# The following Function return the number of the last commit
+# The following function return the number of the last commit
 # It do not takes any arguments but get the basename and path of the original file
 last_version(){
 	LAST_VERSION=0
@@ -66,11 +66,10 @@ add() {
 # The function add a new commit for a file already under versioning
 # A patch will be created between the last version (.latest) and the original file state
 # The function take 3 arguments : 
-# 	- file name gave to te script that is the only
+# 	- file name gave to the script that is the only
 # 	- [OPT] option name (only -m available to add a message to the log file to explain the commit)
 # 	- [OPT] message (String)
 commit() { 
-
 	#check if file already is under control (add function previously used)
 	if [ ! -f "$PATH_FILE/.version/$BASE_NAME.1" ];then
 		echo "Error, no adds for the selected file" >&2
@@ -78,9 +77,9 @@ commit() {
 		echo "Where OPT must be -m \"Message to insert\" " >&2
  	fi
 
- 	#check if last version is diffrent than original file
+ 	#check if last version is different than original file
  	if ! [ -n "$(diff -u $1 $PATH_FILE/.version/$BASE_NAME.latest)" ];then
-		echo "The file is already similar to lastest commit of '$1'"
+		echo "The file is already similar to latest commit of '$1'"
 		exit 0
 	fi
 
@@ -151,8 +150,8 @@ rm_f() {
 }
 
 
-# The function reload the last version commited for a file under versioning
-# The function expect one argument :
+# The function reloads the last version commited for a file under versioning
+# The function expects one argument :
 # 	- The file path and name
 revert() {
 	if ! [ -f "$1" ]
@@ -171,8 +170,8 @@ revert() {
 	echo "Reverted to the latest version"
 }
 
-# The function print on the standard output the difference between the last version commited and a vile (already under versioning)
-# The function expect one argument :
+# The function prints on the standard output the difference between the last version commited and a vile (already under versioning)
+# The function expects one argument :
 # 	- The file path and name
 diff_f() {
 	if ! [ -f "$1" ]
@@ -195,15 +194,15 @@ diff_f() {
 	fi
 }
 
-# The function load a previous version of a file under versioning
-# The function expect two argument :
+# The function loads a previous version of a file under versioning
+# The function expects two arguments :
 # 	- The file path and name
 # 	- The version's number to load
 checkout() { 
 
 	FILE_NAME=$(echo $BASE_NAME | cut -d. -f1)
 
-	#Check if the number of version is valid
+	#check if the number of version is valid    <<<<<<<<<<<<<<<<<<<<------------------------------------????????????
 	if [ $2 -lt 1 ];then
 		echo "Error, invalid argument for version number, should be positive" >&2
 		echo "Usage: ./vesion.sh checkout file.extension N" >&2
@@ -212,17 +211,16 @@ checkout() {
 
 	#check if number of version is under last version number
 	if ! [ -f "$PATH_FILE/.version/$BASE_NAME.$2" ];then
-		echo "The version do not exist, please choose a correct number of version for '$1'"
+		echo "The version does not exist, please choose a correct number of version for '$1'"
 		exit 4
 	fi
 
-	#check version is diffrent than original file
+	#check version is different than original file
 	if ! [ -n "$(diff -u $1 $PATH_FILE/.version/$BASE_NAME.$2)" ];then
 		echo "The file is already similar to version $2"
 		exit 0
 	fi
 
-	#copy the first version in the file
 	cp $PATH_FILE/.version/$BASE_NAME.1 $1
 
 	if [ $2 -eq 1 ];then
@@ -230,17 +228,15 @@ checkout() {
 		exit 0
 	fi
 
-	#loop to apply patch
 	for I in $(seq 2 $2);do
 		patch -R -u $1 $PATH_FILE/.version/$BASE_NAME.$I 1> /dev/null
 	done
 
-	#affichage du message de réussite de l'oppération
 	echo "Checked out version : $2"
 }
 
-# The function print on the standard output the log-file for a file under versioning
-# The function do not expect aruments
+# The function prints on the standard output the log-file for a file under versioning
+# The function does not expect aruments
 log() {
 	if [ ! -f "$PATH_FILE/.version/$BASE_NAME.log" ];then
 		echo "Error, can't find the log file" >&2
@@ -299,6 +295,6 @@ case $1 in
 				fi
 				checkout $2 $3;;
 
-	*) echo "Error, the command do not exists." >&2
+	*) echo "Error, the command does not exist." >&2
        exit 10;;
 esac
