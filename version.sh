@@ -37,15 +37,15 @@ last_version(){
 # The function expect one argument :
 # 	- The file path and name
 add() {
-	if ! [ -d "$PATH_FILE/.version" ]
-	then
-		mkdir "$PATH_FILE/.version"
-	fi
-
 	if ! [ -f "$1" ]
 	then
 		echo "Error! ’$1’ is not a file." >&2
 		exit 1
+	fi
+
+	if ! [ -d "$PATH_FILE/.version" ] #########################
+	then
+		mkdir "$PATH_FILE/.version"
 	fi
 
 	if [ -f "$PATH_FILE/.version/$BASE_NAME.1" ]
@@ -70,6 +70,12 @@ add() {
 # 	- [OPT] option name (only -m available to add a message to the log file to explain the commit)
 # 	- [OPT] message (String)
 commit() { 
+	if ! [ -f "$1" ] ############################################
+	then
+		echo "Error! ’$1’ is not a file." >&2
+		exit 1
+	fi
+
 	#check if file already is under control (add function previously used)
 	if [ ! -f "$PATH_FILE/.version/$BASE_NAME.1" ];then
 		echo "Error, no adds for the selected file" >&2
@@ -83,9 +89,7 @@ commit() {
 		exit 0
 	fi
 
- 	#get the last version number
- 	last_version $1
- 	LAST_VERSION=$(echo $?)
+
 
  	if [ ! -f "$PATH_FILE/.version/$BASE_NAME.log" ];then
 		echo "Error, can't find the log file" >&2
@@ -109,9 +113,13 @@ commit() {
 		exit 3
 	fi
 
+	#get the last version number     ##############################################################""
+ 	last_version $1
+ 	LAST_VERSION=$(echo $?)
+
 	#Commit if needed
  	diff -u $1 $PATH_FILE/.version/$BASE_NAME.latest > $PATH_FILE/.version/$BASE_NAME.$(($LAST_VERSION +1))
- 	cat $1 > $PATH_FILE/.version/$BASE_NAME.latest
+ 	cat $1 > $PATH_FILE/.version/$BASE_NAME.latest   ############################################# cp ?
  	
  	echo "Committed a new version : $(($LAST_VERSION +1))"
 }
@@ -190,7 +198,7 @@ diff_f() {
 	then
 		echo "The two files are empty."
 	else 
-		diff -u $PATH_FILE/.version/$BASE_NAME.latest $1
+		diff -u $PATH_FILE/.version/$BASE_NAME.latest $1  ################################VÉRIFIER EGALITE
 	fi
 }
 
@@ -198,7 +206,7 @@ diff_f() {
 # The function expects two arguments :
 # 	- The file path and name
 # 	- The version's number to load
-checkout() { 
+checkout() {  ###########################################################################
 
 	FILE_NAME=$(echo $BASE_NAME | cut -d. -f1)
 
@@ -246,7 +254,6 @@ log() {
 	fi
 
 	cat -n $PATH_FILE/.version/$BASE_NAME.log
-	exit 0
 }
 
 
