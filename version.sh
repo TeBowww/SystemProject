@@ -37,13 +37,7 @@ last_version(){
 # The function expect one argument :
 # 	- The file path and name
 add() {
-	if ! [ -f "$1" ]
-	then
-		echo "Error! ’$1’ is not a file." >&2
-		exit 1
-	fi
-
-	if ! [ -d "$PATH_FILE/.version" ] #########################
+	if ! [ -d "$PATH_FILE/.version" ]
 	then
 		mkdir "$PATH_FILE/.version"
 	fi
@@ -70,12 +64,6 @@ add() {
 # 	- [OPT] option name (only -m available to add a message to the log file to explain the commit)
 # 	- [OPT] message (String)
 commit() { 
-	if ! [ -f "$1" ] ############################################
-	then
-		echo "Error! ’$1’ is not a file." >&2
-		exit 1
-	fi
-
 	#check if file already is under control (add function previously used)
 	if [ ! -f "$PATH_FILE/.version/$BASE_NAME.1" ];then
 		echo "Error, no adds for the selected file" >&2
@@ -89,8 +77,6 @@ commit() {
 		exit 0
 	fi
 
-
-
  	if [ ! -f "$PATH_FILE/.version/$BASE_NAME.log" ];then
 		echo "Error, can't find the log file" >&2
 		echo "The file may not be under versioning yet" >&2
@@ -102,8 +88,9 @@ commit() {
 		echo "$(date) Add new version" >> $PATH_FILE/.version/$BASE_NAME.log
 	fi
 
+	#Print the comments and date on the log file without line feed
 	if [ "$2" = "-m" ];then
-		echo "$(date) $3" >> $PATH_FILE/.version/$BASE_NAME.log
+		echo "$(date) $(echo $3 | tr -d '\n')" >> $PATH_FILE/.version/$BASE_NAME.log
 	fi
 
 	if [ -n "$2" ] && [ "$2" != "-m" ];then
@@ -113,13 +100,13 @@ commit() {
 		exit 3
 	fi
 
-	#get the last version number     ##############################################################""
+	#get the last version number    
  	last_version $1
  	LAST_VERSION=$(echo $?)
 
 	#Commit if needed
  	diff -u $1 $PATH_FILE/.version/$BASE_NAME.latest > $PATH_FILE/.version/$BASE_NAME.$(($LAST_VERSION +1))
- 	cat $1 > $PATH_FILE/.version/$BASE_NAME.latest   ############################################# cp ?
+ 	cp $1 $PATH_FILE/.version/$BASE_NAME.latest 
  	
  	echo "Committed a new version : $(($LAST_VERSION +1))"
 }
@@ -129,12 +116,6 @@ commit() {
 # The function expect one argument :
 # 	- The file path and name
 rm_f() {
-	if ! [ -f "$1" ]
-	then
-		echo "Error! ’$1’ is not a file." >&2
-		exit 1
-	fi
-
 	if ! [ -f "$PATH_FILE/.version/$BASE_NAME.1" ]
 	then
 		echo "Error! ’$1’ is not a file under control the version manager." >&2
@@ -162,12 +143,6 @@ rm_f() {
 # The function expects one argument :
 # 	- The file path and name
 revert() {
-	if ! [ -f "$1" ]
-	then
-		echo "Error! ’$1’ is not a file." >&2
-		exit 1
-	fi
-
 	if ! [ -f "$PATH_FILE/.version/$BASE_NAME.1" ]
 	then
 		echo "Error! ’$1’ is not a file under control the version manager." >&2
@@ -182,23 +157,18 @@ revert() {
 # The function expects one argument :
 # 	- The file path and name
 diff_f() {
-	if ! [ -f "$1" ]
-	then
-		echo "Error! ’$1’ is not a file." >&2
-		exit 1
-	fi
-
 	if ! [ -f "$PATH_FILE/.version/$BASE_NAME.1" ]
 	then
 		echo "Error! ’$1’ is not a file under control the version manager." >&2
 		exit 2
 	fi
 
-	if [ $(cat $PATH_FILE/.version/$BASE_NAME.latest | wc -l) -eq 0 -a $(cat $1 | wc -l) -eq 0 ]
-	then
-		echo "The two files are empty."
+ 	if ! [ -n "$(diff -u $1 $PATH_FILE/.version/$BASE_NAME.latest)" ]
+ 	then
+		echo "The files are similar." >&2
+		exit 0
 	else 
-		diff -u $PATH_FILE/.version/$BASE_NAME.latest $1  ################################VÉRIFIER EGALITE
+		diff -u $PATH_FILE/.version/$BASE_NAME.latest $1  
 	fi
 }
 
@@ -210,7 +180,7 @@ checkout() {  ##################################################################
 
 	FILE_NAME=$(echo $BASE_NAME | cut -d. -f1)
 
-	#check if the number of version is valid    <<<<<<<<<<<<<<<<<<<<------------------------------------????????????
+	#check if the number of version is valid   
 	if [ $2 -lt 1 ];then
 		echo "Error, invalid argument for version number, should be positive" >&2
 		echo "Usage: ./vesion.sh checkout file.extension N" >&2
@@ -271,7 +241,7 @@ if [ ! -f $2 ];then
 fi
 
 #check validity of arguments number
-if [ $# -lt 2 ];then
+if [ $# -lt 2 -o $# -gt 4 ];then
 		echo "Error, invalid number of arguments" >&2
 		echo "Usage: ./vesion.sh action file.extension [OPT]" >&2
 		echo "Where action can be add, rm, commit, revert, diff, log or checkout" >&2
@@ -286,7 +256,7 @@ case $1 in
 
 	"rm") rm_f $2;;
 
-	"commit" |"ci") commit $2 $3 $4;;
+	"commit" |"ci") commit "$2" "$3" "$4";;
 
 	"revert") revert $2;;
 
