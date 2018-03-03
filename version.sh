@@ -28,6 +28,8 @@ last_version(){
 	return $LAST_VERSION
 }
 
+
+
 #########################################################
 #					Program Functions
 #########################################################
@@ -64,12 +66,20 @@ add() {
 # 	- [OPT] option name (only -m available to add a message to the log file to explain the commit)
 # 	- [OPT] message (String)
 commit() { 
-	#check if file already is under control (add function previously used)
+
 	if [ ! -f "$PATH_FILE/.version/$BASE_NAME.1" ];then
 		echo "Error, no adds for the selected file" >&2
-		echo "Usage: ./vesion.sh add file.extension [OPT]" >&2 #Sortie erreur ou standard ?
+		echo "Usage: ./vesion.sh add file.extension [OPT]" >&2 
 		echo "Where OPT must be -m \"Message to insert\" " >&2
  	fi
+
+
+	if [ -n "$2" ] && [ "$2" != "-m" ];then
+		echo "Error, wrong argument" >&2
+		echo "Usage: ./vesion.sh add file.extension [OPT]" >&2
+		echo "Where OPT must be -m \"Message to insert\" " >&2
+		exit 3
+	fi
 
  	#check if last version is different than original file
  	if ! [ -n "$(diff -u $1 $PATH_FILE/.version/$BASE_NAME.latest)" ];then
@@ -84,7 +94,14 @@ commit() {
 		exit 1
 	fi
 
-	if [ ! -n "$2" ] || [ ! -n "$3" ];then
+
+
+	#get the last version number    
+ 	last_version $1
+ 	LAST_VERSION=$(echo $?)
+
+ 	#Default message in the log file if no comments passed in arguments
+ 	if [ ! -n "$2" ] || [ ! -n "$3" ];then
 		echo "$(date) Add new version" >> $PATH_FILE/.version/$BASE_NAME.log
 	fi
 
@@ -92,17 +109,6 @@ commit() {
 	if [ "$2" = "-m" ];then
 		echo "$(date) $(echo $3 | tr -d '\n')" >> $PATH_FILE/.version/$BASE_NAME.log
 	fi
-
-	if [ -n "$2" ] && [ "$2" != "-m" ];then
-		echo "Error, wrong argument" >&2
-		echo "Usage: ./vesion.sh add file.extension [OPT]" >&2
-		echo "Where OPT must be -m \"Message to insert\" " >&2
-		exit 3
-	fi
-
-	#get the last version number    
- 	last_version $1
- 	LAST_VERSION=$(echo $?)
 
 	#Commit if needed
  	diff -u $1 $PATH_FILE/.version/$BASE_NAME.latest > $PATH_FILE/.version/$BASE_NAME.$(($LAST_VERSION +1))
@@ -176,7 +182,7 @@ diff_f() {
 # The function expects two arguments :
 # 	- The file path and name
 # 	- The version's number to load
-checkout() {  ###########################################################################
+checkout() {
 
 	FILE_NAME=$(echo $BASE_NAME | cut -d. -f1)
 
@@ -199,8 +205,12 @@ checkout() {  ##################################################################
 		exit 0
 	fi
 
-	cp $PATH_FILE/.version/$BASE_NAME.1 $1
 
+	cp $PATH_FILE/.version/$BASE_NAME.latest $PATH_FILE/.version/$BASE_NAME.temp
+
+
+	#checkout execution
+	cp $PATH_FILE/.version/$BASE_NAME.1 $1
 	if [ $2 -eq 1 ];then
 		echo "Checked out version : $2"
 		exit 0
@@ -236,7 +246,7 @@ log() {
 #Check if file exist and is a regular file
 if [ ! -f $2 ];then
 	echo "Error, the file do not exist or isn't a regular file" >&2 
-	echo "Usage: ./vesion.sh commit file.extension" >&2
+	echo "Usage: ./vesion.sh command file.extension [OPT]" >&2
 	exit 1
 fi
 
@@ -273,5 +283,7 @@ case $1 in
 				checkout $2 $3;;
 
 	*) echo "Error, the command does not exist." >&2
+	   echo "Usage: ./vesion.sh action file.extension [OPT]" >&2
+	   echo "Where action can be add, rm, commit, revert, diff, log or checkout" >&2
        exit 10;;
 esac
