@@ -1,8 +1,8 @@
 ############################################################################################
 The following script has been realized in an Universitary context
-It allow user to get files under versioning, create new comit, load previous commit
-ang get informations about the commits trough log messages
-The scipt has been done for Dash interpretor
+It allows users to get files under versioning, create new commit, load previous commit
+and get informations about the commits through log messages
+The script has been done for Dash interpretor
 For further information on the script, see the README file
 
 @Authors : FEDERSPIEL Remi & DELAVOUX Thibault
@@ -14,43 +14,45 @@ Bilan :
 
 	Toutes les fonctions demandées ont été implémentées 
 		- Add pour ajouter un fichier au système de version créant ainsi un dossier caché et insérant deux copies du fichier original
-		- Commit pour ajouter un patch contenant les différences dans le fichier avec la version précéente
+		- Commit pour ajouter un patch contenant les différences dans le fichier avec la version précédente
 		- Rm pour supprimer du système de version tous les fichiers et patchs rattachés à un fichié donné
-		- Revert pour annuler des changements et revenir à la derniere version commité du fichier
-		- Diff pour afficher les différences entre le fichier acctuel et le drenier commit réalisé
+		- Revert pour annuler des changements et revenir à la dernière version commitée du fichier
+		- Diff pour afficher les différences entre le fichier acctuel et le dernier commit réalisé
 		- Checkout pour revenir à une version différente (plus ancienne ou plus récente)
-		- Log pour afficher les dates des commit et les éventuels commentaires
+		- Log pour afficher les dates des commits et les éventuels commentaires
 
 Une alternative d'appel pour les commandes commit et checkout à également été implémenté (ci / co)
 
 
-lancement et appels :
+Lancement et appels :
 
-	Les fonctions ont été testés dans différentes condition pour assurer de couvrir au maximum les éventualités.
-	Aucune faille n'a été décecté dans l'appel des commandes jusqu'à maintenant
+	Les fonctions ont été testées dans différentes conditions pour assurer de couvrir au maximum les éventualités.
+	Aucune faille n'a été détectée dans l'appel des commandes jusqu'à maintenant
 
 
 Codes de retour en cas d'erreur :
 
 1 : file not found
-2 : file not under versionning yet
+2 : file not under versioning yet
 3 : invalid arguments number
-4 : ivalid argument form
+4 : invalid argument form
 	
 
 Améliorations possibles :
 
-	
-
+	- Gestion des branches
+	- Fonction d'affichage du numero de la dernière version chargée
+	- Retenue d'un nom de la personne enregistrant le commit dans le log file
+	- Vérifier lors d'un checkout que la version n'est pas déja celle ouverte
 
 Bilan du travail en binôme : 
 	
-	les tâches à réaliser ont été clairement définies à l'avance et chaque membre du binôme à pu travailler en autonomie sur les fonctions dont il avait la charge.
-	Rémi a implémenté les fonction add, rm, diff, revert ainsi que la boucle du main
+	Les tâches à réaliser ont été clairement définies à l'avance et chaque membre du binôme à pu travailler en autonomie sur les fonctions dont il avait la charge.
+	Rémi a implémenté les fonction add, rm, diff, revert ainsi que la boucle du main.
 	Thibault à implémenté les fonctions checkout, commit, log, et à assurer la mise en commun des travaux.
 
-	Nous avons ensuite travaillé de concert pour la gestion des éventuels bugs et disfonctionnement du script.
+	Nous avons ensuite travaillé de concert pour la gestion des éventuels bugs et disfonctionnements du script.
 
-	Le travail à été réalisé majoritairement à distance par le biais d'un gestionnaire de version en ligne pour assurer un suivit et l'évolution cohérente d'un seul fichier. 
+	Le travail à été réalisé majoritairement à distance par le biais d'un gestionnaire de version en ligne pour assurer un suivi et l'évolution cohérente d'un seul fichier. 
 
 
