@@ -258,7 +258,7 @@ if [ $# -lt 2 -o $# -gt 4 ];then
 		exit 3
 fi
 
-if [ $1 != 'ci' -o $1 != 'commit' ] && [ $# -gt 2 ];then
+if [ $1 != 'ci' -a $1 != 'commit' -a $1 != 'co' -a $1 != 'checkout' -a $# -gt 2 ];then
 		echo "Error, invalid number of arguments" >&2
 		echo "Usage: ./vesion.sh action file.extension [OPT]" >&2
 		echo "Where action can be add, rm, commit, revert, diff, log or checkout" >&2
@@ -281,7 +281,7 @@ case $1 in
 
 	"log") log;;
 
-	"checkout") if [ $# -lt 3 ] || ! [ "$(echo $3 | grep "^[[:digit:]] *$")" ];then
+	"checkout" | "co") if [ $# -lt 3 ] || ! [ "$(echo $3 | grep "^[[:digit:]] *$")" ];then
 					echo "Error, invalid number of arguments or argument type" >&2
 					echo "Usage: ./vesion.sh action file.extension N" >&2
 					echo "Where N is the version number to load (integer)" >&2
