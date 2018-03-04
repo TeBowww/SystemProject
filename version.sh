@@ -28,6 +28,16 @@ last_version(){
 	return $LAST_VERSION
 }
 
+argument_validity(){
+
+	if [ -n "$1" ];then
+		echo "Error, invalid number of arguments" >&2
+		echo "Usage: ./vesion.sh action file.extension [OPT]" >&2
+		echo "Where action can be add, rm, commit, revert, diff, log or checkout" >&2
+		exit 3
+	fi
+}
+
 
 
 #########################################################
@@ -73,7 +83,6 @@ commit() {
 		echo "Where OPT must be -m \"Message to insert\" " >&2
  	fi
 
-
 	if [ -n "$2" ] && [ "$2" != "-m" ];then
 		echo "Error, wrong argument" >&2
 		echo "Usage: ./vesion.sh add file.extension [OPT]" >&2
@@ -81,7 +90,6 @@ commit() {
 		exit 3
 	fi
 
- 	#check if last version is different than original file
  	if ! [ -n "$(diff -u $1 $PATH_FILE/.version/$BASE_NAME.latest)" ];then
 		echo "The file is already similar to latest commit of '$1'"
 		exit 0
@@ -95,12 +103,11 @@ commit() {
 	fi
 
 
-
 	#get the last version number    
  	last_version $1
  	LAST_VERSION=$(echo $?)
 
- 	#Default message in the log file if no comments passed in arguments
+ 	#Add Default message in the log file if no comments passed in arguments
  	if [ ! -n "$2" ] || [ ! -n "$3" ];then
 		echo "$(date) Add new version" >> $PATH_FILE/.version/$BASE_NAME.log
 	fi
@@ -110,7 +117,7 @@ commit() {
 		echo "$(date) $(echo $3 | tr -d '\n')" >> $PATH_FILE/.version/$BASE_NAME.log
 	fi
 
-	#Commit if needed
+	
  	diff -u $1 $PATH_FILE/.version/$BASE_NAME.latest > $PATH_FILE/.version/$BASE_NAME.$(($LAST_VERSION +1))
  	cp $1 $PATH_FILE/.version/$BASE_NAME.latest 
  	
@@ -258,23 +265,29 @@ if [ $# -lt 2 -o $# -gt 4 ];then
 		exit 3
 fi
 
+
 PATH_FILE=$(dirname $2)
 BASE_NAME=$(basename $2)
 
 case $1 in
-	"add") add $2;;
+	"add")	argument_validity $3
+			add $2;;
 
-	"rm") rm_f $2;;
+	"rm") 	argument_validity $3 
+			rm_f $2;;
 
 	"commit" |"ci") commit "$2" "$3" "$4";;
 
-	"revert") revert $2;;
+	"revert") 	argument_validity $3
+				revert $2;;
 
-	"diff") diff_f $2;;
+	"diff") argument_validity $3
+			diff_f $2;;
 
-	"log") log;;
+	"log")	argument_validity $3
+			log;;
 
-	"checkout") if [ $# -lt 3 ] || ! [ "$(echo $3 | grep "^[[:digit:]] *$")" ];then
+	"checkout" | "co") if [ $# -lt 3 ] || ! [ "$(echo $3 | grep "^[[:digit:]] *$")" ];then
 					echo "Error, invalid number of arguments or argument type" >&2
 					echo "Usage: ./vesion.sh action file.extension N" >&2
 					echo "Where N is the version number to load (integer)" >&2
