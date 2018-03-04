@@ -258,6 +258,13 @@ if [ $# -lt 2 -o $# -gt 4 ];then
 		exit 3
 fi
 
+if [ $1 != 'ci' -o $1 != 'commit' ] && [ $# -gt 2 ];then
+		echo "Error, invalid number of arguments" >&2
+		echo "Usage: ./vesion.sh action file.extension [OPT]" >&2
+		echo "Where action can be add, rm, commit, revert, diff, log or checkout" >&2
+		exit 3
+fi
+
 PATH_FILE=$(dirname $2)
 BASE_NAME=$(basename $2)
 
